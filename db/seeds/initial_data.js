@@ -44,28 +44,24 @@ exports.seed = async function(knex) {
       description: 'Create UI screens for onboarding process', 
       column_id: plTodoColumn.id, 
       order: 1,
-      subtasks_count: 3
     },
     { 
       title: 'Build UI for search', 
       description: 'Create UI components for search functionality', 
       column_id: plTodoColumn.id, 
       order: 2,
-      subtasks_count: 1
     },
     { 
       title: 'Build settings UI', 
       description: 'Create interface for app settings', 
       column_id: plTodoColumn.id, 
       order: 3,
-      subtasks_count: 2
     },
     { 
       title: 'QA and test all major user journeys', 
       description: 'Ensure all user paths work correctly', 
       column_id: plTodoColumn.id, 
       order: 4,
-      subtasks_count: 2
     },
     
     // DOING column tasks
@@ -74,42 +70,36 @@ exports.seed = async function(knex) {
       description: 'Create designs for settings and search functionality', 
       column_id: plDoingColumn.id, 
       order: 1,
-      subtasks_count: 3
     },
     { 
       title: 'Add account management endpoints', 
       description: 'Develop API endpoints for account operations', 
       column_id: plDoingColumn.id, 
       order: 2,
-      subtasks_count: 3
     },
     { 
       title: 'Design onboarding flow', 
       description: 'Create designs for user onboarding', 
       column_id: plDoingColumn.id, 
       order: 3,
-      subtasks_count: 3
     },
     { 
       title: 'Add search endpoints', 
       description: 'Develop API endpoints for search functionality', 
       column_id: plDoingColumn.id, 
       order: 4,
-      subtasks_count: 2
     },
     { 
       title: 'Add authentication endpoints', 
       description: 'Develop API endpoints for user authentication', 
       column_id: plDoingColumn.id, 
       order: 5,
-      subtasks_count: 2
     },
     { 
       title: 'Research pricing points of various competitors and trial different business models', 
       description: 'Study competition pricing strategies', 
       column_id: plDoingColumn.id, 
       order: 6,
-      subtasks_count: 3
     },
     
     // DONE column tasks
@@ -118,49 +108,42 @@ exports.seed = async function(knex) {
       description: 'Test wireframes with users', 
       column_id: plDoneColumn.id, 
       order: 1,
-      subtasks_count: 1
     },
     { 
       title: 'Create wireframe prototype', 
       description: 'Build initial wireframe prototype', 
       column_id: plDoneColumn.id, 
       order: 2,
-      subtasks_count: 1
     },
     { 
       title: 'Review results of usability tests and iterate', 
       description: 'Analyze test results and make improvements', 
       column_id: plDoneColumn.id, 
       order: 3,
-      subtasks_count: 3
     },
     { 
       title: 'Create paper prototypes and conduct 10 usability tests with potential customers', 
       description: 'Test paper prototypes with potential users', 
       column_id: plDoneColumn.id, 
       order: 4,
-      subtasks_count: 2
     },
     { 
       title: 'Market discovery', 
       description: 'Research market needs and opportunities', 
       column_id: plDoneColumn.id, 
       order: 5,
-      subtasks_count: 1
     },
     { 
       title: 'Competitor analysis', 
       description: 'Research and analyze competitors', 
       column_id: plDoneColumn.id, 
       order: 6,
-      subtasks_count: 2
     },
     { 
       title: 'Research the market', 
       description: 'Study market trends and requirements', 
       column_id: plDoneColumn.id, 
       order: 7,
-      subtasks_count: 2
     }
   ];
 
@@ -172,21 +155,18 @@ exports.seed = async function(knex) {
       description: 'Develop social media strategy and content', 
       column_id: mpTodoColumn.id, 
       order: 1,
-      subtasks_count: 4
     },
     { 
       title: 'Develop email newsletter', 
       description: 'Design templates and plan content schedule', 
       column_id: mpTodoColumn.id, 
       order: 2,
-      subtasks_count: 2
     },
     { 
       title: 'Create promotional video', 
       description: 'Produce a short video highlighting key features', 
       column_id: mpTodoColumn.id, 
       order: 3,
-      subtasks_count: 3
     },
     
     // DOING column tasks
@@ -195,14 +175,12 @@ exports.seed = async function(knex) {
       description: 'Optimize website content for search engines', 
       column_id: mpDoingColumn.id, 
       order: 1,
-      subtasks_count: 2
     },
     { 
       title: 'Plan product launch event', 
       description: 'Organize virtual launch event with demos', 
       column_id: mpDoingColumn.id, 
       order: 2,
-      subtasks_count: 4
     },
     
     // DONE column tasks
@@ -211,14 +189,12 @@ exports.seed = async function(knex) {
       description: 'Complete analysis of target audience', 
       column_id: mpDoneColumn.id, 
       order: 1,
-      subtasks_count: 1
     },
     { 
       title: 'Brand identity development', 
       description: 'Finalize logo and brand guidelines', 
       column_id: mpDoneColumn.id, 
       order: 2,
-      subtasks_count: 2
     }
   ];
 
@@ -230,21 +206,18 @@ exports.seed = async function(knex) {
       description: 'Add integrations with popular productivity tools', 
       column_id: rmTodoColumn.id, 
       order: 1,
-      subtasks_count: 3
     },
     { 
       title: 'Mobile app development', 
       description: 'Create native mobile applications', 
       column_id: rmTodoColumn.id, 
       order: 2,
-      subtasks_count: 4
     },
     { 
       title: 'Enterprise features', 
       description: 'Develop advanced security and admin features', 
       column_id: rmTodoColumn.id, 
       order: 3,
-      subtasks_count: 2
     },
     
     // DOING column tasks
@@ -253,14 +226,12 @@ exports.seed = async function(knex) {
       description: 'Optimize load times and responsiveness', 
       column_id: rmDoingColumn.id, 
       order: 1,
-      subtasks_count: 2
     },
     { 
       title: 'User feedback implementation', 
       description: 'Address top user requests from feedback forum', 
       column_id: rmDoingColumn.id, 
       order: 2,
-      subtasks_count: 3
     },
     
     // DONE column tasks
@@ -269,14 +240,12 @@ exports.seed = async function(knex) {
       description: 'Complete essential features for MVP', 
       column_id: rmDoneColumn.id, 
       order: 1,
-      subtasks_count: 5
     },
     { 
       title: 'Initial user testing', 
       description: 'Complete first round of beta testing', 
       column_id: rmDoneColumn.id, 
       order: 2,
-      subtasks_count: 1
     }
   ];
 

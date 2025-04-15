@@ -62,9 +62,6 @@ export async function PUT(request: NextRequest, { params }: Params) {
       updateData.order = body.order;
     }
     
-    if (body.subtasks_count !== undefined) {
-      updateData.subtasks_count = body.subtasks_count;
-    }
     
     const updatedTask = await taskModel.update(id, updateData);
     

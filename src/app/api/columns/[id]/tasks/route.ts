@@ -65,8 +65,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       title: body.title,
       description: body.description || '',
       column_id: columnId,
-      order: maxOrder + 1,
-      subtasks_count: body.subtasks_count || 0
+      order: maxOrder + 1
     });
     
     return NextResponse.json(newTask, { status: 201 });

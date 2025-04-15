@@ -6,6 +6,8 @@ import Header from '@/components/Header';
 import Column from '@/components/Column';
 import TaskDialog from '@/components/TaskDialog';
 import NewTaskForm from '@/components/NewTaskForm';
+import ColumnFormModal from '@/components/ColumnFormModal';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import type { Board } from '@/lib/models/board';
 import type { Column as ColumnType } from '@/lib/models/column';
 import type { Task } from '@/lib/models/task';
@@ -25,6 +27,11 @@ export default function Home() {
   
   // State for new task form
   const [isNewTaskFormVisible, setIsNewTaskFormVisible] = useState(false);
+
+  // State for column management
+  const [isNewColumnModalVisible, setIsNewColumnModalVisible] = useState(false);
+  const [columnToDelete, setColumnToDelete] = useState<ColumnType | null>(null);
+  const [isDeleteColumnConfirmVisible, setIsDeleteColumnConfirmVisible] = useState(false);
 
   // Fetch board details when board changes
   useEffect(() => {
@@ -49,24 +56,27 @@ export default function Home() {
   useEffect(() => {
     if (!currentBoardId) return;
     
-    const fetchColumns = async () => {
-      setIsLoadingColumns(true);
-      
-      try {
-        const response = await fetch(`/api/boards/${currentBoardId}/columns`);
-        if (response.ok) {
-          const data = await response.json();
-          setColumns(data);
-        }
-      } catch (err) {
-        console.error('Error fetching columns:', err);
-      } finally {
-        setIsLoadingColumns(false);
-      }
-    };
-    
     fetchColumns();
   }, [currentBoardId]);
+
+  // Fetch columns function
+  const fetchColumns = async () => {
+    if (!currentBoardId) return;
+    
+    setIsLoadingColumns(true);
+    
+    try {
+      const response = await fetch(`/api/boards/${currentBoardId}/columns`);
+      if (response.ok) {
+        const data = await response.json();
+        setColumns(data);
+      }
+    } catch (err) {
+      console.error('Error fetching columns:', err);
+    } finally {
+      setIsLoadingColumns(false);
+    }
+  };
 
   // Handle board change from sidebar
   const handleBoardChange = (boardId: number) => {
@@ -87,22 +97,7 @@ export default function Home() {
 
   // Handle task update
   const handleTaskUpdate = () => {
-    // Refresh the columns to get the updated tasks
-    const refreshColumns = async () => {
-      if (!currentBoardId) return;
-      
-      try {
-        const response = await fetch(`/api/boards/${currentBoardId}/columns`);
-        if (response.ok) {
-          const data = await response.json();
-          setColumns(data);
-        }
-      } catch (err) {
-        console.error('Error refreshing columns:', err);
-      }
-    };
-    
-    refreshColumns();
+    fetchColumns(); // Refresh all data
     setIsTaskDialogVisible(false);
     setSelectedTask(null);
   };
@@ -119,23 +114,62 @@ export default function Home() {
 
   // Handle new task added
   const handleTaskAdded = () => {
-    // Refresh the columns to get the new task
-    const refreshColumns = async () => {
-      if (!currentBoardId) return;
-      
-      try {
-        const response = await fetch(`/api/boards/${currentBoardId}/columns`);
-        if (response.ok) {
-          const data = await response.json();
-          setColumns(data);
-        }
-      } catch (err) {
-        console.error('Error refreshing columns:', err);
-      }
-    };
-    
-    refreshColumns();
+    fetchColumns(); // Refresh all data
     setIsNewTaskFormVisible(false);
+  };
+
+  // Handle new column creation
+  const handleCreateColumn = async (name: string) => {
+    if (!currentBoardId) return;
+    
+    try {
+      const response = await fetch(`/api/boards/${currentBoardId}/columns`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create column');
+      }
+      
+      // Refresh columns
+      fetchColumns();
+    } catch (err) {
+      console.error('Error creating column:', err);
+      throw new Error('Failed to create column');
+    }
+  };
+
+  // Handle column deletion
+  const handleDeleteColumn = async () => {
+    if (!columnToDelete) return;
+    
+    try {
+      const response = await fetch(`/api/columns/${columnToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete column');
+      }
+      
+      // Refresh columns
+      fetchColumns();
+      // Close the dialog
+      setIsDeleteColumnConfirmVisible(false);
+      setColumnToDelete(null);
+    } catch (err) {
+      console.error('Error deleting column:', err);
+    }
+  };
+
+  // Confirm column deletion
+  const confirmDeleteColumn = (column: ColumnType) => {
+    setColumnToDelete(column);
+    setIsDeleteColumnConfirmVisible(true);
   };
 
   return (
@@ -155,7 +189,10 @@ export default function Home() {
         ) : columns.length === 0 ? (
           <div className="flex items-center justify-center flex-1 flex-col">
             <p className="text-gray-500 mb-4">This board is empty. Create a new column to get started.</p>
-            <button className="bg-primary hover:bg-opacity-80 text-white rounded-full px-4 py-2">
+            <button 
+              className="bg-primary hover:bg-opacity-80 text-white rounded-full px-4 py-2"
+              onClick={() => setIsNewColumnModalVisible(true)}
+            >
               + Add New Column
             </button>
           </div>
@@ -163,15 +200,35 @@ export default function Home() {
           <div className="flex-1 overflow-x-auto p-6">
             <div className="flex space-x-6 h-full">
               {columns.map((column) => (
-                <Column 
-                  key={column.id} 
-                  column={column}
-                  onTaskClick={handleTaskClick}
-                />
+                <div className="relative group" key={column.id}>
+                  <Column 
+                    column={column}
+                    onTaskClick={handleTaskClick}
+                    allColumns={columns}
+                  />
+                  
+                  {/* Column actions */}
+                  <div className="absolute top-0 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => confirmDeleteColumn(column)}
+                      className="p-1 bg-card rounded-full text-destructive hover:bg-destructive hover:text-white shadow-md transition-colors"
+                      title="Delete column"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               ))}
               
-              <div className="min-w-[280px] flex items-center justify-center">
-                <button className="text-gray-500 hover:text-white bg-secondary rounded-md px-10 py-8 text-lg font-bold hover:bg-opacity-80">
+              <div className="min-w-[280px] flex items-stretch justify-center">
+                <button 
+                  className="text-gray-500 hover:text-white bg-[#01091b] rounded-md px-10 py-8 text-lg font-bold hover:bg-opacity-80"
+                  onClick={() => setIsNewColumnModalVisible(true)}
+                >
                   + New Column
                 </button>
               </div>
@@ -197,6 +254,32 @@ export default function Home() {
         onTaskAdded={handleTaskAdded}
         isVisible={isNewTaskFormVisible}
       />
+
+      {/* New column modal */}
+      <ColumnFormModal
+        isOpen={isNewColumnModalVisible}
+        onClose={() => setIsNewColumnModalVisible(false)}
+        onSubmit={handleCreateColumn}
+        title="Add New Column"
+        submitLabel="Create Column"
+      />
+
+      {/* Delete column confirmation */}
+      {columnToDelete && (
+        <ConfirmDialog
+          isOpen={isDeleteColumnConfirmVisible}
+          onClose={() => {
+            setIsDeleteColumnConfirmVisible(false);
+            setColumnToDelete(null);
+          }}
+          onConfirm={handleDeleteColumn}
+          title="Delete Column"
+          message={`Are you sure you want to delete the "${columnToDelete.name}" column? All tasks in this column will be permanently deleted.`}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          isDestructive={true}
+        />
+      )}
     </main>
   );
 }

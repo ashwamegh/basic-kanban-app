@@ -3,11 +3,11 @@
  * @returns {Promise<void>}
  */
 exports.up = function(knex) {
-  return knex.schema.createTable('tasks', (table) => {
+  return knex.schema.createTable('subtasks', (table) => {
     table.increments('id').primary();
     table.string('title').notNullable();
-    table.text('description');
-    table.integer('column_id').unsigned().references('id').inTable('columns').onDelete('CASCADE');
+    table.boolean('is_completed').defaultTo(false);
+    table.integer('task_id').unsigned().references('id').inTable('tasks').onDelete('CASCADE');
     table.integer('order').notNullable();
     table.timestamps(true, true);
   });
@@ -18,5 +18,5 @@ exports.up = function(knex) {
  * @returns {Promise<void>}
  */
 exports.down = function(knex) {
-  return knex.schema.dropTable('tasks');
+  return knex.schema.dropTable('subtasks');
 }; 

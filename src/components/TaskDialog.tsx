@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Task } from '@/lib/models/task';
 import type { Column } from '@/lib/models/column';
+import ConfirmDialog from './ConfirmDialog';
+import SubtasksList from './SubtasksList';
 
 interface TaskDialogProps {
   task: Task | null;
@@ -26,14 +28,63 @@ export default function TaskDialog({
   const [columnId, setColumnId] = useState<number | undefined>();
   const [isEditing, setIsEditing] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [subtasksCompleted, setSubtasksCompleted] = useState(0);
+  const [subtasksTotal, setSubtasksTotal] = useState(0);
+  const [updateCounter, setUpdateCounter] = useState(0);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setDescription(task.description || '');
       setColumnId(task.column_id);
+      
+      // Reset subtask counts when a new task is loaded
+      setSubtasksCompleted(0);
+      setSubtasksTotal(0);
+      
+      // Fetch subtasks immediately
+      fetchSubtasks();
+    }
+  }, [task, updateCounter]);
+
+  // Add a window event listener for subtask updates
+  useEffect(() => {
+    const handleSubtaskEvent = (event: CustomEvent) => {
+      if (task && event.detail.taskId === task.id) {
+        setUpdateCounter(prev => prev + 1);
+      }
+    };
+
+    // Add event listener
+    window.addEventListener('subtaskUpdated', handleSubtaskEvent as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('subtaskUpdated', handleSubtaskEvent as EventListener);
+    };
+  }, [task]);
+
+  const fetchSubtasks = useCallback(() => {
+    if (task && task.id) {
+      fetch(`/api/tasks/${task.id}/subtasks`)
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch subtasks');
+          return res.json();
+        })
+        .then(subtasks => {
+          const completed = subtasks.filter((s: any) => s.is_completed).length;
+          setSubtasksCompleted(completed);
+          setSubtasksTotal(subtasks.length);
+        })
+        .catch(err => console.error('Failed to fetch updated subtasks', err));
     }
   }, [task]);
+
+  const handleSubtaskUpdate = useCallback(() => {
+    fetchSubtasks();
+    setUpdateCounter(prev => prev + 1);
+  }, [fetchSubtasks]);
 
   const handleSave = async () => {
     if (!task) return;
@@ -69,12 +120,13 @@ export default function TaskDialog({
     }
   };
 
+  const confirmDeleteTask = () => {
+    setShowOptions(false);
+    setIsDeleteConfirmOpen(true);
+  };
+
   const handleDelete = async () => {
     if (!task) return;
-    
-    if (!confirm('Are you sure you want to delete this task?')) {
-      return;
-    }
     
     try {
       const response = await fetch(`/api/tasks/${task.id}`, {
@@ -95,111 +147,144 @@ export default function TaskDialog({
   if (!isVisible || !task) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-card rounded-md w-full max-w-md">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div 
+          className="bg-card rounded-md w-full max-w-md max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
+        >
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="text-lg font-bold w-full bg-input rounded-md p-2"
+                  placeholder="Task Title"
+                />
+              ) : (
+                <h3 className="text-lg font-bold">{task.title}</h3>
+              )}
+              
+              <div className="relative">
+                <button 
+                  onClick={() => setShowOptions(!showOptions)}
+                  className="p-2 rounded-full hover:bg-secondary"
+                >
+                  <svg width="5" height="20" viewBox="0 0 5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="2.5" cy="2.5" r="2.5" fill="#828FA3"/>
+                    <circle cx="2.5" cy="10" r="2.5" fill="#828FA3"/>
+                    <circle cx="2.5" cy="17.5" r="2.5" fill="#828FA3"/>
+                  </svg>
+                </button>
+                
+                {showOptions && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-card shadow-lg rounded-md z-10 overflow-hidden">
+                    <button 
+                      onClick={() => {
+                        setIsEditing(true);
+                        setShowOptions(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-secondary"
+                    >
+                      Edit Task
+                    </button>
+                    <button 
+                      onClick={confirmDeleteTask}
+                      className="w-full text-left px-4 py-2 text-destructive hover:bg-secondary"
+                    >
+                      Delete Task
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+            
             {isEditing ? (
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="text-lg font-bold w-full bg-input rounded-md p-2"
-                placeholder="Task Title"
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full h-24 bg-input rounded-md p-2 mb-4 text-sm"
+                placeholder="Add a description"
               />
             ) : (
-              <h3 className="text-lg font-bold">{task.title}</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                {task.description || 'No description'}
+              </p>
             )}
             
-            <div className="relative">
-              <button 
-                onClick={() => setShowOptions(!showOptions)}
-                className="p-2 rounded-full hover:bg-secondary"
-              >
-                <svg width="5" height="20" viewBox="0 0 5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="2.5" cy="2.5" r="2.5" fill="#828FA3"/>
-                  <circle cx="2.5" cy="10" r="2.5" fill="#828FA3"/>
-                  <circle cx="2.5" cy="17.5" r="2.5" fill="#828FA3"/>
-                </svg>
-              </button>
-              
-              {showOptions && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-card shadow-lg rounded-md z-10 overflow-hidden">
-                  <button 
-                    onClick={() => {
-                      setIsEditing(true);
-                      setShowOptions(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-secondary"
-                  >
-                    Edit Task
-                  </button>
-                  <button 
-                    onClick={handleDelete}
-                    className="w-full text-left px-4 py-2 text-destructive hover:bg-secondary"
-                  >
-                    Delete Task
-                  </button>
-                </div>
-              )}
+            {/* Subtasks section - shown in both view and edit modes */}
+            <div className="mb-6 border border-secondary/20 rounded-lg p-4 bg-secondary/5">
+              <div className="mb-2 flex justify-between items-center">
+                <h4 className="text-sm font-medium">
+                  Subtasks
+                </h4>
+                <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                  {subtasksCompleted} of {subtasksTotal} completed
+                </span>
+              </div>
+              <SubtasksList taskId={task.id} onSubtaskUpdate={handleSubtaskUpdate} />
             </div>
+            
+            {isEditing && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Status</label>
+                <select
+                  value={columnId}
+                  onChange={(e) => setColumnId(Number(e.target.value))}
+                  className="w-full p-2 rounded-md bg-input text-sm"
+                >
+                  {columns.map((column) => (
+                    <option key={column.id} value={column.id}>{column.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
+            {isEditing ? (
+              <div className="flex space-x-2 mt-6">
+                <button
+                  onClick={handleSave}
+                  className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="flex-1 bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex justify-end">
+                <button
+                  onClick={onClose}
+                  className="bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+                >
+                  Close
+                </button>
+              </div>
+            )}
           </div>
-          
-          {isEditing ? (
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full h-24 bg-input rounded-md p-2 mb-4 text-sm"
-              placeholder="Add a description"
-            />
-          ) : (
-            <p className="text-gray-400 text-sm mb-6">
-              {task.description || 'No description'}
-            </p>
-          )}
-          
-          {isEditing && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Status</label>
-              <select
-                value={columnId}
-                onChange={(e) => setColumnId(Number(e.target.value))}
-                className="w-full p-2 rounded-md bg-input text-sm"
-              >
-                {columns.map((column) => (
-                  <option key={column.id} value={column.id}>{column.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-          
-          {isEditing ? (
-            <div className="flex space-x-2 mt-6">
-              <button
-                onClick={handleSave}
-                className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
-              >
-                Save Changes
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="flex-1 bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <div className="flex justify-end">
-              <button
-                onClick={onClose}
-                className="bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
-              >
-                Close
-              </button>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog 
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={() => {
+          setIsDeleteConfirmOpen(false);
+          handleDelete();
+        }}
+        title="Delete Task"
+        message={`Are you sure you want to delete "${task.title}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDestructive={true}
+      />
+    </>
   );
 } 

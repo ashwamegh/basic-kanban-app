@@ -1,64 +1,93 @@
-import db from '../db';
+import db from '@/lib/db';
 
-interface Task {
+export interface Task {
   id: number;
   title: string;
   description: string | null;
   column_id: number;
   order: number;
-  subtasks_count: number;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
+  subtasks_count?: number;
 }
 
-interface CreateTask {
+export interface CreateTask {
   title: string;
   description?: string;
   column_id: number;
   order: number;
-  subtasks_count?: number;
 }
 
-const getByColumnId = async (columnId: number): Promise<Task[]> => {
-  return db('tasks')
-    .select('*')
+export async function getByColumnId(columnId: number): Promise<Task[]> {
+  const tasks = await db('tasks')
     .where({ column_id: columnId })
     .orderBy('order', 'asc');
-};
-
-const getById = async (id: number): Promise<Task | null> => {
-  const task = await db('tasks')
-    .select('*')
-    .where({ id })
-    .first();
+    
+  // Count subtasks for each task
+  for (const task of tasks) {
+    const subtasksCount = await db('subtasks')
+      .where({ task_id: task.id })
+      .count('id as count')
+      .first();
+      
+    task.subtasks_count = subtasksCount ? Number(subtasksCount.count) : 0;
+  }
   
-  return task || null;
-};
+  return tasks;
+}
 
-const create = async (data: CreateTask): Promise<Task> => {
-  const [task] = await db('tasks')
-    .insert(data)
-    .returning('*');
+export async function getById(id: number): Promise<Task | null> {
+  const tasks = await db('tasks').where({ id }).limit(1);
+  
+  if (!tasks.length) return null;
+  
+  const task = tasks[0];
+  
+  // Count subtasks
+  const subtasksCount = await db('subtasks')
+    .where({ task_id: task.id })
+    .count('id as count')
+    .first();
+    
+  task.subtasks_count = subtasksCount ? Number(subtasksCount.count) : 0;
   
   return task;
-};
+}
 
-const update = async (id: number, data: Partial<CreateTask>): Promise<Task | null> => {
-  const [task] = await db('tasks')
+export async function create(task: CreateTask): Promise<Task> {
+  const [newTask] = await db('tasks').insert({
+    title: task.title,
+    description: task.description || null,
+    column_id: task.column_id,
+    order: task.order,
+  }).returning('*');
+  
+  return newTask;
+}
+
+export async function update(id: number, updates: Partial<Task>): Promise<Task | null> {
+  // Remove subtasks_count from updates as it's calculated on the fly
+  const taskUpdates = { ...updates };
+  
+  const [updatedTask] = await db('tasks')
     .where({ id })
-    .update(data)
+    .update(taskUpdates)
     .returning('*');
   
-  return task || null;
-};
-
-const remove = async (id: number): Promise<boolean> => {
-  const deletedCount = await db('tasks')
-    .where({ id })
-    .del();
+  if (!updatedTask) return null;
   
-  return deletedCount > 0;
-};
+  // Count subtasks
+  const subtasksCount = await db('subtasks')
+    .where({ task_id: id })
+    .count('id as count')
+    .first();
+    
+  updatedTask.subtasks_count = subtasksCount ? Number(subtasksCount.count) : 0;
+  
+  return updatedTask;
+}
 
-export type { Task, CreateTask };
-export { getByColumnId, getById, create, update, remove }; 
+export async function remove(id: number): Promise<boolean> {
+  await db('tasks').where({ id }).delete();
+  return true;
+} 
