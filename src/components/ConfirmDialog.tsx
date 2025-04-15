@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+import Portal from './Portal';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -34,42 +35,73 @@ export default function ConfirmDialog({
     }
   }, [isOpen]);
 
+  // Handle escape key press
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (isOpen && e.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-auto p-3 md:p-0">
+    <Portal rootId="modal-root">
       <div 
-        className="relative bg-card rounded-md shadow-xl max-w-md w-full p-4 md:p-6 mx-2 md:mx-4"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-auto p-3 md:p-0"
+        onClick={onClose}
       >
-        <h2 className={`text-lg md:text-xl font-bold mb-3 md:mb-4 ${isDestructive ? 'text-destructive' : ''}`}>
-          {title}
-        </h2>
-        
-        <p className="text-sm md:text-base text-gray-400 mb-4 md:mb-6">
-          {message}
-        </p>
-        
-        <div className="flex space-x-3 md:space-x-4">
+        <div 
+          className="relative bg-card rounded-md shadow-xl max-w-md w-full p-4 md:p-6 mx-2 md:mx-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className={`text-lg md:text-xl font-bold mb-3 md:mb-4 ${isDestructive ? 'text-destructive' : ''}`}>
+            {title}
+          </h2>
+          
+          <p className="text-sm md:text-base text-gray-400 mb-4 md:mb-6">
+            {message}
+          </p>
+          
+          <div className="flex space-x-3 md:space-x-4">
+            <button
+              onClick={onConfirm}
+              className={`flex-1 py-2 text-sm rounded-md transition-colors ${
+                isDestructive 
+                  ? 'bg-destructive hover:bg-opacity-80 text-white' 
+                  : 'bg-primary hover:bg-opacity-80 text-white'
+              }`}
+            >
+              {confirmLabel}
+            </button>
+            <button
+              ref={cancelButtonRef}
+              onClick={onClose}
+              className="flex-1 bg-secondary text-white py-2 text-sm rounded-md hover:bg-opacity-80 transition-colors"
+            >
+              {cancelLabel}
+            </button>
+          </div>
+          
+          {/* Close button */}
           <button
-            onClick={onConfirm}
-            className={`flex-1 py-2 text-sm rounded-md transition-colors ${
-              isDestructive 
-                ? 'bg-destructive hover:bg-opacity-80 text-white' 
-                : 'bg-primary hover:bg-opacity-80 text-white'
-            }`}
-          >
-            {confirmLabel}
-          </button>
-          <button
-            ref={cancelButtonRef}
+            className="absolute top-4 right-4 text-gray-400 hover:text-foreground"
             onClick={onClose}
-            className="flex-1 bg-secondary text-white py-2 text-sm rounded-md hover:bg-opacity-80 transition-colors"
+            aria-label="Close"
           >
-            {cancelLabel}
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 } 

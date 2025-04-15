@@ -3,21 +3,27 @@
 import { useState, useEffect } from 'react';
 
 export default function SimpleThemeToggle() {
-  // Don't set any initial state to avoid hydration mismatch
+  // Default to dark theme
   const [currentTheme, setCurrentTheme] = useState<string | null>(null);
 
   // Initialize once the component mounts
   useEffect(() => {
     // Check the current theme on page load
     const root = document.documentElement;
-    const isDark = root.classList.contains('dark-theme');
     const isLight = root.classList.contains('light-theme');
     
     // Set the internal state based on actual document state
     if (isLight) {
       setCurrentTheme('light');
     } else {
-      setCurrentTheme('dark'); // Default or explicit dark theme
+      // Default to dark theme
+      setCurrentTheme('dark');
+      
+      // Ensure dark theme is applied if neither theme is set
+      if (!root.classList.contains('dark-theme')) {
+        root.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+      }
     }
   }, []);
 

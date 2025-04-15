@@ -13,18 +13,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark-theme">
       <head>
         <Script id="theme-script" strategy="beforeInteractive">
           {`
             (function() {
               try {
-                // Get saved theme or use system preference
+                // Get saved theme or use dark as default
                 let theme = localStorage.getItem('theme');
                 if (!theme) {
-                  // Check system preference
-                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  theme = prefersDark ? 'dark' : 'light';
+                  // Set dark theme as default
+                  theme = 'dark';
                   localStorage.setItem('theme', theme);
                 }
                 

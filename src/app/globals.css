@@ -2,7 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base colors (dark theme is default) */
+/* Default theme (dark) applied to html without any class */
+html {
+  --background: 237deg 100% 4%;
+  --foreground: 0deg 0% 100%;
+  
+  --card: 240deg 7% 12%;
+  --card-foreground: 0deg 0% 100%;
+  
+  --primary: 242deg 60% 70%;
+  --primary-foreground: 0deg 0% 100%;
+  
+  --secondary: 240deg 5% 25%;
+  --secondary-foreground: 0deg 0% 100%;
+  
+  --border: 240deg 5% 25%;
+  --input: 240deg 5% 25%;
+  
+  --accent: 240deg 25% 35%;
+  --accent-foreground: 0deg 0% 100%;
+  
+  --destructive: 0deg 72% 51%;
+  --destructive-foreground: 0deg 0% 100%;
+}
+
+/* Base colors (explicitly dark theme) */
 :root {
   --background: 237deg 100% 4%;
   --foreground: 0deg 0% 100%;
