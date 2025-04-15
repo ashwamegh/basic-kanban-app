@@ -7,11 +7,13 @@ import type { Board } from '@/lib/models/board';
 import BoardFormModal from './BoardFormModal';
 
 interface SidebarProps {
-  onBoardChange: (boardId: number) => void;
+  onBoardSelect: (boardId: number) => void;
+  onNoBoards?: () => void;
+  currentBoardId?: number | null;
   onClose?: () => void;
 }
 
-export default function Sidebar({ onBoardChange, onClose }: SidebarProps) {
+export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [boards, setBoards] = useState<Board[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,10 +31,32 @@ export default function Sidebar({ onBoardChange, onClose }: SidebarProps) {
         const data = await response.json();
         setBoards(data);
         
-        // If we have boards and no board is selected yet, set the first one as active by default
-        if (data.length > 0 && selectedBoardId === null) {
-          setSelectedBoardId(data[0].id);
-          onBoardChange(data[0].id);
+        // If there are no boards, call the onNoBoards callback
+        if (data.length === 0) {
+          if (onNoBoards) {
+            onNoBoards();
+          }
+          return;
+        }
+        
+        // Get the saved boardId from localStorage
+        const savedBoardId = localStorage.getItem('lastBoardId');
+        
+        // If we have boards, set the selectedBoardId
+        if (data.length > 0) {
+          if (savedBoardId && data.some((board: Board) => board.id === parseInt(savedBoardId))) {
+            // Use the saved board ID if it exists and is valid
+            const boardId = parseInt(savedBoardId);
+            setSelectedBoardId(boardId);
+            onBoardSelect(boardId);
+          } else if (currentBoardId) {
+            // Use the currentBoardId from props if it exists
+            setSelectedBoardId(currentBoardId);
+          } else if (selectedBoardId === null) {
+            // Otherwise use the first board as default
+            setSelectedBoardId(data[0].id);
+            onBoardSelect(data[0].id);
+          }
         }
       } catch (err) {
         setError('Failed to load boards');
@@ -43,7 +67,7 @@ export default function Sidebar({ onBoardChange, onClose }: SidebarProps) {
     };
 
     fetchBoards();
-  }, [onBoardChange, selectedBoardId]);
+  }, [onBoardSelect, selectedBoardId, currentBoardId, onNoBoards]);
 
   // Create a new board
   const handleCreateBoard = async (name: string) => {
@@ -63,7 +87,8 @@ export default function Sidebar({ onBoardChange, onClose }: SidebarProps) {
       const newBoard = await response.json();
       setBoards([...boards, newBoard]);
       setSelectedBoardId(newBoard.id);
-      onBoardChange(newBoard.id);
+      onBoardSelect(newBoard.id);
+      localStorage.setItem('lastBoardId', newBoard.id.toString());
       setIsCreateModalOpen(false);
     } catch (err) {
       console.error('Error creating board:', err);
@@ -74,7 +99,7 @@ export default function Sidebar({ onBoardChange, onClose }: SidebarProps) {
   // Handle board selection
   const handleBoardSelect = (boardId: number) => {
     setSelectedBoardId(boardId);
-    onBoardChange(boardId);
+    onBoardSelect(boardId);
   };
 
   return (

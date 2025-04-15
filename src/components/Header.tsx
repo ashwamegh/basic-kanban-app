@@ -8,9 +8,10 @@ interface HeaderProps {
   currentBoard?: Board;
   onAddTask: () => void;
   onMenuToggle?: () => void;
+  onBoardUpdate?: (updatedBoard: Board) => void;
 }
 
-export default function Header({ currentBoard, onAddTask, onMenuToggle }: HeaderProps) {
+export default function Header({ currentBoard, onAddTask, onMenuToggle, onBoardUpdate }: HeaderProps) {
   const [showBoardActions, setShowBoardActions] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -36,9 +37,18 @@ export default function Header({ currentBoard, onAddTask, onMenuToggle }: Header
         throw new Error('Failed to update board');
       }
       
-      // Refresh the page to see the updated board
-      window.location.reload();
+      // Get the updated board data
+      const updatedBoard = await response.json();
       
+      // Update the board in place if callback provided
+      if (onBoardUpdate) {
+        onBoardUpdate(updatedBoard);
+      } else {
+        // Fall back to page reload if no callback provided
+        window.location.reload();
+      }
+      
+      setIsEditModalOpen(false);
     } catch (err) {
       console.error('Error updating board:', err);
       throw new Error('Failed to update board');
@@ -55,6 +65,12 @@ export default function Header({ currentBoard, onAddTask, onMenuToggle }: Header
       
       if (!response.ok) {
         throw new Error('Failed to delete board');
+      }
+      
+      // Remove this board from localStorage if it's the current saved one
+      const savedBoardId = localStorage.getItem('lastBoardId');
+      if (savedBoardId && parseInt(savedBoardId) === currentBoard.id) {
+        localStorage.removeItem('lastBoardId');
       }
       
       // Redirect to home page after deletion

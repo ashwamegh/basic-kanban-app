@@ -36,9 +36,20 @@ export default function Home() {
   // State for mobile sidebar visibility
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
+  // Load the last selected board from localStorage when the app first loads
+  useEffect(() => {
+    const lastBoardId = localStorage.getItem('lastBoardId');
+    if (lastBoardId) {
+      setCurrentBoardId(parseInt(lastBoardId));
+    }
+  }, []);
+
   // Fetch board details when board changes
   useEffect(() => {
     if (!currentBoardId) return;
+    
+    // Save the current board ID to localStorage whenever it changes
+    localStorage.setItem('lastBoardId', currentBoardId.toString());
     
     const fetchBoardDetails = async () => {
       try {
@@ -82,8 +93,22 @@ export default function Home() {
   };
 
   // Handle board change from sidebar
-  const handleBoardChange = (boardId: number) => {
+  const handleBoardSelect = (boardId: number) => {
     setCurrentBoardId(boardId);
+    localStorage.setItem('lastBoardId', boardId.toString());
+  };
+
+  // Handle board update (e.g., after rename)
+  const handleBoardUpdate = (updatedBoard: Board) => {
+    setCurrentBoard(updatedBoard);
+  };
+
+  const handleNoBoards = () => {
+    // Clear any existing board from localStorage
+    localStorage.removeItem('lastBoardId');
+    setCurrentBoardId(null);
+    setCurrentBoard(null);
+    setColumns([]);
   };
 
   // Handle task click
@@ -192,7 +217,12 @@ export default function Home() {
       
       {/* Sidebar with mobile visibility toggling */}
       <div className={`${isSidebarVisible ? 'translate-x-0' : '-translate-x-full'} fixed top-0 left-0 h-full z-30 md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
-        <Sidebar onBoardChange={handleBoardChange} onClose={() => setIsSidebarVisible(false)} />
+        <Sidebar 
+          currentBoardId={currentBoardId}
+          onBoardSelect={handleBoardSelect}
+          onNoBoards={handleNoBoards}
+          onClose={() => setIsSidebarVisible(false)}
+        />
       </div>
       
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -200,6 +230,7 @@ export default function Home() {
           currentBoard={currentBoard || undefined} 
           onAddTask={handleAddNewTask} 
           onMenuToggle={toggleSidebar}
+          onBoardUpdate={handleBoardUpdate}
         />
         
         {isLoadingColumns ? (
