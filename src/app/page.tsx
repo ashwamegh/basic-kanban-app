@@ -278,7 +278,7 @@ export default function Home() {
               
               <div className="min-w-[240px] md:min-w-[280px] flex items-stretch justify-center">
                 <button 
-                  className="text-gray-500 hover:text-white bg-[#01091b] rounded-md px-4 py-6 md:px-10 md:py-8 text-lg font-bold hover:bg-opacity-80"
+                  className="text-gray-500 hover:text-white bg-secondary rounded-md px-4 py-6 md:px-10 md:py-8 text-lg font-bold hover:bg-opacity-80"
                   onClick={() => setIsNewColumnModalVisible(true)}
                 >
                   + New Column

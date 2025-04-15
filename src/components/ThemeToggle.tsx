@@ -6,22 +6,70 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [mounted, setMounted] = useState(false);
   
+  // Initialize theme from localStorage on mount
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
-    if (savedTheme === 'dark' || savedTheme === 'light') {
-      setTheme(savedTheme);
+    try {
+      const currentClasses = document.documentElement.className;
+      console.log('Current HTML classes:', currentClasses);
+      
+      let detectedTheme: 'dark' | 'light' = 'dark';
+      
+      // Determine theme from class on document
+      if (currentClasses.includes('light-theme')) {
+        detectedTheme = 'light';
+      } else if (currentClasses.includes('dark-theme')) {
+        detectedTheme = 'dark';
+      }
+      
+      console.log('Detected theme from classes:', detectedTheme);
+      setTheme(detectedTheme);
+      
+      // Double-check with localStorage
+      const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+      console.log('Saved theme in localStorage:', savedTheme);
+      
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        // Only update if different to avoid unnecessary re-renders
+        if (savedTheme !== detectedTheme) {
+          console.log('Updating theme from localStorage:', savedTheme);
+          setTheme(savedTheme);
+        }
+      }
+    } catch (err) {
+      console.error('Error initializing theme:', err);
     }
   }, []);
   
+  // Apply the theme change
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    
-    document.documentElement.classList.remove('dark-theme', 'light-theme');
-    document.documentElement.classList.add(`${newTheme}-theme`);
-    
-    localStorage.setItem('theme', newTheme);
+    try {
+      const newTheme = theme === 'dark' ? 'light' : 'dark';
+      console.log('Toggling theme from', theme, 'to', newTheme);
+      
+      // Update state
+      setTheme(newTheme);
+      
+      // Remove both theme classes
+      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.classList.remove('light-theme');
+      
+      // Add the new theme class
+      document.documentElement.classList.add(`${newTheme}-theme`);
+      console.log('Updated document classes:', document.documentElement.className);
+      
+      // Store preference
+      localStorage.setItem('theme', newTheme);
+      console.log('Saved theme to localStorage:', newTheme);
+      
+      // Force a redraw of the page elements (optional)
+      document.body.style.transition = 'background-color 0.2s ease';
+      setTimeout(() => {
+        document.body.style.transition = '';
+      }, 300);
+    } catch (err) {
+      console.error('Error toggling theme:', err);
+    }
   };
   
   if (!mounted) return null;
@@ -75,6 +123,11 @@ export default function ThemeToggle() {
       >
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
       </svg>
+      
+      {/* Small indicator of current theme (for debugging) */}
+      <div className="absolute top-1 right-1 text-xs">
+        {theme}
+      </div>
     </div>
   );
 } 

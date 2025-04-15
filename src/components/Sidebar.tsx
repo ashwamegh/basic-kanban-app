@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Board } from '@/lib/models/board';
 import BoardFormModal from './BoardFormModal';
-import ThemeToggle from './ThemeToggle';
+import SimpleThemeToggle from './SimpleThemeToggle';
 
 interface SidebarProps {
   onBoardSelect: (boardId: number) => void;
@@ -32,7 +32,6 @@ export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onC
         const data = await response.json();
         setBoards(data);
         
-        // If there are no boards, call the onNoBoards callback
         if (data.length === 0) {
           if (onNoBoards) {
             onNoBoards();
@@ -40,21 +39,16 @@ export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onC
           return;
         }
         
-        // Get the saved boardId from localStorage
         const savedBoardId = localStorage.getItem('lastBoardId');
         
-        // If we have boards, set the selectedBoardId
         if (data.length > 0) {
           if (savedBoardId && data.some((board: Board) => board.id === parseInt(savedBoardId))) {
-            // Use the saved board ID if it exists and is valid
             const boardId = parseInt(savedBoardId);
             setSelectedBoardId(boardId);
             onBoardSelect(boardId);
           } else if (currentBoardId) {
-            // Use the currentBoardId from props if it exists
             setSelectedBoardId(currentBoardId);
           } else if (selectedBoardId === null) {
-            // Otherwise use the first board as default
             setSelectedBoardId(data[0].id);
             onBoardSelect(data[0].id);
           }
@@ -70,7 +64,6 @@ export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onC
     fetchBoards();
   }, [onBoardSelect, selectedBoardId, currentBoardId, onNoBoards]);
 
-  // Create a new board
   const handleCreateBoard = async (name: string) => {
     try {
       const response = await fetch('/api/boards', {
@@ -97,7 +90,6 @@ export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onC
     }
   };
 
-  // Handle board selection
   const handleBoardSelect = (boardId: number) => {
     setSelectedBoardId(boardId);
     onBoardSelect(boardId);
@@ -120,7 +112,6 @@ export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onC
               <h1 className="text-xl font-bold">kanban</h1>
             </div>
             
-            {/* Close button for mobile - only displayed on mobile */}
             {onClose && (
               <button 
                 onClick={onClose}
@@ -177,13 +168,11 @@ export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onC
           )}
         </div>
         
-        {/* Add the theme toggle at the bottom */}
-        {/* <div className="mt-auto mb-6">
-          <ThemeToggle />
-        </div> */}
+        <div className="mt-auto mb-6">
+          <SimpleThemeToggle />
+        </div>
       </div>
 
-      {/* Create board modal */}
       <BoardFormModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
