@@ -1,103 +1,202 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
+import Column from '@/components/Column';
+import TaskDialog from '@/components/TaskDialog';
+import NewTaskForm from '@/components/NewTaskForm';
+import type { Board } from '@/lib/models/board';
+import type { Column as ColumnType } from '@/lib/models/column';
+import type { Task } from '@/lib/models/task';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // State for the current board
+  const [currentBoardId, setCurrentBoardId] = useState<number | null>(null);
+  const [currentBoard, setCurrentBoard] = useState<Board | null>(null);
+  
+  // State for columns in the current board
+  const [columns, setColumns] = useState<ColumnType[]>([]);
+  const [isLoadingColumns, setIsLoadingColumns] = useState(false);
+  
+  // State for task dialog
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isTaskDialogVisible, setIsTaskDialogVisible] = useState(false);
+  
+  // State for new task form
+  const [isNewTaskFormVisible, setIsNewTaskFormVisible] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  // Fetch board details when board changes
+  useEffect(() => {
+    if (!currentBoardId) return;
+    
+    const fetchBoardDetails = async () => {
+      try {
+        const response = await fetch(`/api/boards/${currentBoardId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentBoard(data);
+        }
+      } catch (err) {
+        console.error('Error fetching board details:', err);
+      }
+    };
+    
+    fetchBoardDetails();
+  }, [currentBoardId]);
+
+  // Fetch columns when board changes
+  useEffect(() => {
+    if (!currentBoardId) return;
+    
+    const fetchColumns = async () => {
+      setIsLoadingColumns(true);
+      
+      try {
+        const response = await fetch(`/api/boards/${currentBoardId}/columns`);
+        if (response.ok) {
+          const data = await response.json();
+          setColumns(data);
+        }
+      } catch (err) {
+        console.error('Error fetching columns:', err);
+      } finally {
+        setIsLoadingColumns(false);
+      }
+    };
+    
+    fetchColumns();
+  }, [currentBoardId]);
+
+  // Handle board change from sidebar
+  const handleBoardChange = (boardId: number) => {
+    setCurrentBoardId(boardId);
+  };
+
+  // Handle task click
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setIsTaskDialogVisible(true);
+  };
+
+  // Handle task dialog close
+  const handleTaskDialogClose = () => {
+    setIsTaskDialogVisible(false);
+    setSelectedTask(null);
+  };
+
+  // Handle task update
+  const handleTaskUpdate = () => {
+    // Refresh the columns to get the updated tasks
+    const refreshColumns = async () => {
+      if (!currentBoardId) return;
+      
+      try {
+        const response = await fetch(`/api/boards/${currentBoardId}/columns`);
+        if (response.ok) {
+          const data = await response.json();
+          setColumns(data);
+        }
+      } catch (err) {
+        console.error('Error refreshing columns:', err);
+      }
+    };
+    
+    refreshColumns();
+    setIsTaskDialogVisible(false);
+    setSelectedTask(null);
+  };
+
+  // Handle new task button click
+  const handleAddNewTask = () => {
+    setIsNewTaskFormVisible(true);
+  };
+
+  // Handle new task form close
+  const handleNewTaskFormClose = () => {
+    setIsNewTaskFormVisible(false);
+  };
+
+  // Handle new task added
+  const handleTaskAdded = () => {
+    // Refresh the columns to get the new task
+    const refreshColumns = async () => {
+      if (!currentBoardId) return;
+      
+      try {
+        const response = await fetch(`/api/boards/${currentBoardId}/columns`);
+        if (response.ok) {
+          const data = await response.json();
+          setColumns(data);
+        }
+      } catch (err) {
+        console.error('Error refreshing columns:', err);
+      }
+    };
+    
+    refreshColumns();
+    setIsNewTaskFormVisible(false);
+  };
+
+  return (
+    <main className="flex h-screen overflow-hidden bg-background">
+      <Sidebar onBoardChange={handleBoardChange} />
+      
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <Header 
+          currentBoard={currentBoard || undefined} 
+          onAddTask={handleAddNewTask} 
+        />
+        
+        {isLoadingColumns ? (
+          <div className="flex items-center justify-center flex-1">
+            <p className="text-gray-500">Loading columns...</p>
+          </div>
+        ) : columns.length === 0 ? (
+          <div className="flex items-center justify-center flex-1 flex-col">
+            <p className="text-gray-500 mb-4">This board is empty. Create a new column to get started.</p>
+            <button className="bg-primary hover:bg-opacity-80 text-white rounded-full px-4 py-2">
+              + Add New Column
+            </button>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-x-auto p-6">
+            <div className="flex space-x-6 h-full">
+              {columns.map((column) => (
+                <Column 
+                  key={column.id} 
+                  column={column}
+                  onTaskClick={handleTaskClick}
+                />
+              ))}
+              
+              <div className="min-w-[280px] flex items-center justify-center">
+                <button className="text-gray-500 hover:text-white bg-secondary rounded-md px-10 py-8 text-lg font-bold hover:bg-opacity-80">
+                  + New Column
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Task dialog */}
+      <TaskDialog
+        task={selectedTask}
+        columns={columns}
+        onClose={handleTaskDialogClose}
+        onTaskUpdate={handleTaskUpdate}
+        onTaskDelete={handleTaskUpdate}
+        isVisible={isTaskDialogVisible}
+      />
+      
+      {/* New task form */}
+      <NewTaskForm
+        columns={columns}
+        onClose={handleNewTaskFormClose}
+        onTaskAdded={handleTaskAdded}
+        isVisible={isNewTaskFormVisible}
+      />
+    </main>
   );
 }

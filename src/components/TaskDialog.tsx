@@ -1,0 +1,205 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import type { Task } from '@/lib/models/task';
+import type { Column } from '@/lib/models/column';
+
+interface TaskDialogProps {
+  task: Task | null;
+  columns: Column[];
+  onClose: () => void;
+  onTaskUpdate: () => void;
+  onTaskDelete: () => void;
+  isVisible: boolean;
+}
+
+export default function TaskDialog({
+  task,
+  columns,
+  onClose,
+  onTaskUpdate,
+  onTaskDelete,
+  isVisible
+}: TaskDialogProps) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [columnId, setColumnId] = useState<number | undefined>();
+  const [isEditing, setIsEditing] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setDescription(task.description || '');
+      setColumnId(task.column_id);
+    }
+  }, [task]);
+
+  const handleSave = async () => {
+    if (!task) return;
+    
+    // Validate
+    if (!title.trim()) {
+      alert('Task title is required');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description: description || '',
+          column_id: columnId,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+      
+      onTaskUpdate();
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Error updating task:', err);
+      alert('Failed to update task. Please try again.');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!task) return;
+    
+    if (!confirm('Are you sure you want to delete this task?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+      
+      onTaskDelete();
+    } catch (err) {
+      console.error('Error deleting task:', err);
+      alert('Failed to delete task. Please try again.');
+    }
+  };
+
+  if (!isVisible || !task) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-card rounded-md w-full max-w-md">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            {isEditing ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="text-lg font-bold w-full bg-input rounded-md p-2"
+                placeholder="Task Title"
+              />
+            ) : (
+              <h3 className="text-lg font-bold">{task.title}</h3>
+            )}
+            
+            <div className="relative">
+              <button 
+                onClick={() => setShowOptions(!showOptions)}
+                className="p-2 rounded-full hover:bg-secondary"
+              >
+                <svg width="5" height="20" viewBox="0 0 5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="2.5" cy="2.5" r="2.5" fill="#828FA3"/>
+                  <circle cx="2.5" cy="10" r="2.5" fill="#828FA3"/>
+                  <circle cx="2.5" cy="17.5" r="2.5" fill="#828FA3"/>
+                </svg>
+              </button>
+              
+              {showOptions && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-card shadow-lg rounded-md z-10 overflow-hidden">
+                  <button 
+                    onClick={() => {
+                      setIsEditing(true);
+                      setShowOptions(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-secondary"
+                  >
+                    Edit Task
+                  </button>
+                  <button 
+                    onClick={handleDelete}
+                    className="w-full text-left px-4 py-2 text-destructive hover:bg-secondary"
+                  >
+                    Delete Task
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {isEditing ? (
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full h-24 bg-input rounded-md p-2 mb-4 text-sm"
+              placeholder="Add a description"
+            />
+          ) : (
+            <p className="text-gray-400 text-sm mb-6">
+              {task.description || 'No description'}
+            </p>
+          )}
+          
+          {isEditing && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Status</label>
+              <select
+                value={columnId}
+                onChange={(e) => setColumnId(Number(e.target.value))}
+                className="w-full p-2 rounded-md bg-input text-sm"
+              >
+                {columns.map((column) => (
+                  <option key={column.id} value={column.id}>{column.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          
+          {isEditing ? (
+            <div className="flex space-x-2 mt-6">
+              <button
+                onClick={handleSave}
+                className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="flex-1 bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-end">
+              <button
+                onClick={onClose}
+                className="bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+} 

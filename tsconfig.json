@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "knexfile.js", "db/migrations/**/*.js", "db/seeds/**/*.js", "postcss.config.mjs", "tailwind.config.mjss", "next.config.ts"],
   "exclude": ["node_modules"]
 }
