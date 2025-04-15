@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Board } from '@/lib/models/board';
 import BoardFormModal from './BoardFormModal';
+import ThemeToggle from './ThemeToggle';
 
 interface SidebarProps {
   onBoardSelect: (boardId: number) => void;
@@ -175,6 +176,11 @@ export default function Sidebar({ onBoardSelect, onNoBoards, currentBoardId, onC
             </nav>
           )}
         </div>
+        
+        {/* Add the theme toggle at the bottom */}
+        {/* <div className="mt-auto mb-6">
+          <ThemeToggle />
+        </div> */}
       </div>
 
       {/* Create board modal */}

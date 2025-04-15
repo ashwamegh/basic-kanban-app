@@ -8,6 +8,7 @@ import TaskDialog from '@/components/TaskDialog';
 import NewTaskForm from '@/components/NewTaskForm';
 import ColumnFormModal from '@/components/ColumnFormModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import ThemeToggle from '@/components/ThemeToggle';
 import type { Board } from '@/lib/models/board';
 import type { Column as ColumnType } from '@/lib/models/column';
 import type { Task } from '@/lib/models/task';
