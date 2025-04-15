@@ -15,6 +15,7 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const [isAddingNewSubtask, setIsAddingNewSubtask] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Fetch subtasks
   const fetchSubtasks = async () => {
@@ -100,9 +101,11 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
     e.preventDefault();
     
     if (!newSubtaskTitle.trim()) {
+      setValidationError('Subtask title is required');
       return;
     }
     
+    setValidationError(null);
     setIsAddingSubtask(true);
     
     try {
@@ -117,7 +120,8 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create subtask');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create subtask');
       }
       
       const newSubtask = await response.json();
@@ -222,12 +226,20 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
                 <input
                   type="text"
                   value={newSubtaskTitle}
-                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                  onChange={(e) => {
+                    setNewSubtaskTitle(e.target.value);
+                    if (validationError) setValidationError(null);
+                  }}
                   placeholder="Subtask title"
-                  className="p-2 rounded-md bg-input text-sm w-full"
+                  className={`p-2 rounded-md bg-input text-sm w-full ${
+                    validationError ? 'border border-destructive' : ''
+                  }`}
                   disabled={isAddingSubtask}
                   autoFocus
                 />
+                {validationError && (
+                  <p className="text-destructive text-xs -mt-1">{validationError}</p>
+                )}
                 <div className="flex space-x-2">
                   <button
                     type="submit"

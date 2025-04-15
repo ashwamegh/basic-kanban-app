@@ -32,6 +32,8 @@ export default function TaskDialog({
   const [subtasksCompleted, setSubtasksCompleted] = useState(0);
   const [subtasksTotal, setSubtasksTotal] = useState(0);
   const [updateCounter, setUpdateCounter] = useState(0);
+  const [errors, setErrors] = useState<{ title?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -91,9 +93,11 @@ export default function TaskDialog({
     
     // Validate
     if (!title.trim()) {
-      alert('Task title is required');
+      setErrors({ title: 'Task title is required' });
       return;
     }
+    
+    setIsSubmitting(true);
     
     try {
       const response = await fetch(`/api/tasks/${task.id}`, {
@@ -114,9 +118,12 @@ export default function TaskDialog({
       
       onTaskUpdate();
       setIsEditing(false);
+      setErrors({});
     } catch (err) {
       console.error('Error updating task:', err);
-      alert('Failed to update task. Please try again.');
+      setErrors({ title: 'Failed to update task. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,13 +163,23 @@ export default function TaskDialog({
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
               {isEditing ? (
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="text-lg font-bold w-full bg-input rounded-md p-2"
-                  placeholder="Task Title"
-                />
+                <div className="w-full">
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      if (errors.title) setErrors({});
+                    }}
+                    className={`text-lg font-bold w-full bg-input rounded-md p-2 ${
+                      errors.title ? 'border border-destructive' : ''
+                    }`}
+                    placeholder="Task Title"
+                  />
+                  {errors.title && (
+                    <p className="text-destructive text-xs mt-1">{errors.title}</p>
+                  )}
+                </div>
               ) : (
                 <h3 className="text-lg font-bold">{task.title}</h3>
               )}
@@ -246,9 +263,10 @@ export default function TaskDialog({
               <div className="flex space-x-2 mt-6">
                 <button
                   onClick={handleSave}
-                  className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-full py-2 px-4 disabled:opacity-50"
                 >
-                  Save Changes
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}

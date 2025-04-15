@@ -21,7 +21,7 @@ export default function NewTaskForm({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [columnId, setColumnId] = useState<number | undefined>(undefined);
-  const [errors, setErrors] = useState<{ title?: string }>({});
+  const [errors, setErrors] = useState<{ title?: string, subtasks?: string[] }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Subtasks state
@@ -54,10 +54,23 @@ export default function NewTaskForm({
   }, [isVisible, columns, defaultColumnId]);
 
   const validateForm = (): boolean => {
-    const newErrors: { title?: string } = {};
+    const newErrors: { title?: string, subtasks?: string[] } = {};
     
+    // Validate title
     if (!title.trim()) {
       newErrors.title = 'Title is required';
+    }
+    
+    // Validate subtasks
+    const subtaskErrors: string[] = [];
+    subtasks.forEach((subtask, index) => {
+      if (!subtask.title.trim()) {
+        subtaskErrors[index] = 'Subtask title is required';
+      }
+    });
+    
+    if (subtaskErrors.length > 0) {
+      newErrors.subtasks = subtaskErrors;
     }
     
     setErrors(newErrors);
@@ -70,6 +83,9 @@ export default function NewTaskForm({
     if (!validateForm() || !columnId) {
       return;
     }
+    
+    // Filter out any empty subtasks
+    const validSubtasks = subtasks.filter(subtask => subtask.title.trim() !== '');
     
     setIsSubmitting(true);
     
@@ -93,8 +109,8 @@ export default function NewTaskForm({
       const newTask = await taskResponse.json();
       
       // Then create subtasks if any
-      if (subtasks.length > 0) {
-        const subtaskPromises = subtasks.map((subtask, index) => {
+      if (validSubtasks.length > 0) {
+        const subtaskPromises = validSubtasks.map((subtask, index) => {
           return fetch(`/api/tasks/${newTask.id}/subtasks`, {
             method: 'POST',
             headers: {
@@ -134,6 +150,13 @@ export default function NewTaskForm({
     const newSubtasks = [...subtasks];
     newSubtasks[index].title = title;
     setSubtasks(newSubtasks);
+    
+    // Clear error for this subtask if it exists
+    if (errors.subtasks && errors.subtasks[index]) {
+      const newSubtaskErrors = [...errors.subtasks];
+      newSubtaskErrors[index] = '';
+      setErrors({...errors, subtasks: newSubtaskErrors});
+    }
   };
 
   const removeSubtask = (index: number) => {
@@ -195,7 +218,9 @@ export default function NewTaskForm({
                       type="text"
                       value={subtask.title}
                       onChange={(e) => updateSubtask(index, e.target.value)}
-                      className="flex-1 p-2 bg-transparent text-sm border-none outline-none focus:ring-0"
+                      className={`flex-1 p-2 bg-transparent text-sm border-none outline-none focus:ring-0 ${
+                        errors.subtasks && errors.subtasks[index] ? 'border-b border-destructive' : ''
+                      }`}
                       placeholder={`Subtask ${index + 1}`}
                     />
                     <button
@@ -209,6 +234,9 @@ export default function NewTaskForm({
                     </button>
                   </div>
                 ))}
+                {errors.subtasks && errors.subtasks.some(err => err) && (
+                  <p className="text-destructive text-xs mt-1">One or more subtasks are missing a title</p>
+                )}
               </div>
               <button
                 type="button"
