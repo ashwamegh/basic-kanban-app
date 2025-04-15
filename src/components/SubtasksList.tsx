@@ -174,42 +174,42 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
   return (
     <div>      
       {isLoading ? (
-        <div className="flex items-center justify-center p-4">
-          <div className="animate-pulse w-6 h-6 rounded-full border-2 border-primary border-t-transparent"></div>
+        <div className="flex items-center justify-center p-3 md:p-4">
+          <div className="animate-pulse w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-primary border-t-transparent"></div>
         </div>
       ) : error ? (
-        <p className="text-destructive text-sm p-2 bg-destructive/10 rounded-md">{error}</p>
+        <p className="text-destructive text-xs md:text-sm p-2 bg-destructive/10 rounded-md">{error}</p>
       ) : (
         <>
           {subtasks.length > 0 ? (
-            <ul className="space-y-2 mb-4">
+            <ul className="space-y-1.5 md:space-y-2 mb-3 md:mb-4">
               {subtasks.map(subtask => (
                 <li key={subtask.id} className="group relative">
-                  <label className="flex items-center w-full py-2 px-3 bg-input rounded-md cursor-pointer hover:bg-secondary/20 transition-colors">
-                    <div className="flex-shrink-0 w-5 h-5 mr-3 relative">
+                  <label className="flex items-center w-full py-1.5 md:py-2 px-2 md:px-3 bg-input rounded-md cursor-pointer hover:bg-secondary/20 transition-colors">
+                    <div className="flex-shrink-0 w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3 relative">
                       <input
                         type="checkbox"
                         checked={subtask.is_completed}
                         onChange={() => handleToggleSubtask(subtask.id)}
                         className="absolute opacity-0 w-full h-full cursor-pointer"
                       />
-                      <div className={`w-5 h-5 border-2 rounded ${subtask.is_completed ? 'bg-primary border-primary' : 'border-gray-400'} flex items-center justify-center`}>
+                      <div className={`w-4 h-4 md:w-5 md:h-5 border-2 rounded ${subtask.is_completed ? 'bg-primary border-primary' : 'border-gray-400'} flex items-center justify-center`}>
                         {subtask.is_completed && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-2 w-2 md:h-3 md:w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
                       </div>
                     </div>
-                    <span className={`text-sm ${subtask.is_completed ? 'line-through text-gray-400' : ''}`}>
+                    <span className={`text-xs md:text-sm ${subtask.is_completed ? 'line-through text-gray-400' : ''}`}>
                       {subtask.title}
                     </span>
                   </label>
                   <button
                     onClick={(e) => handleDeleteSubtask(subtask.id, e)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-secondary/40 rounded-full"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 md:p-1.5 hover:bg-secondary/40 rounded-full"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 hover:text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4 text-gray-400 hover:text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
@@ -217,7 +217,7 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-gray-400 mb-4 italic">No subtasks yet. Add one below.</p>
+            <p className="text-xs md:text-sm text-gray-400 mb-3 md:mb-4 italic">No subtasks yet. Add one below.</p>
           )}
           
           {isAddingNewSubtask ? (
@@ -231,7 +231,7 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
                     if (validationError) setValidationError(null);
                   }}
                   placeholder="Subtask title"
-                  className={`p-2 rounded-md bg-input text-sm w-full ${
+                  className={`p-1.5 md:p-2 rounded-md bg-input text-xs md:text-sm w-full ${
                     validationError ? 'border border-destructive' : ''
                   }`}
                   disabled={isAddingSubtask}
@@ -244,14 +244,14 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
                   <button
                     type="submit"
                     disabled={isAddingSubtask || !newSubtaskTitle.trim()}
-                    className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-md p-2 text-sm disabled:opacity-50 transition-colors"
+                    className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-md p-1.5 md:p-2 text-xs md:text-sm disabled:opacity-50 transition-colors"
                   >
                     {isAddingSubtask ? 'Adding...' : 'Add Subtask'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAddingNewSubtask(false)}
-                    className="flex-1 bg-secondary hover:bg-opacity-80 text-white rounded-md p-2 text-sm transition-colors"
+                    className="flex-1 bg-secondary hover:bg-opacity-80 text-white rounded-md p-1.5 md:p-2 text-xs md:text-sm transition-colors"
                   >
                     Cancel
                   </button>
@@ -261,9 +261,9 @@ export default function SubtasksList({ taskId, onSubtaskUpdate }: SubtasksListPr
           ) : (
             <button
               onClick={() => setIsAddingNewSubtask(true)}
-              className="flex items-center justify-center w-full p-2 rounded-md bg-secondary/20 hover:bg-secondary/30 text-sm transition-colors"
+              className="flex items-center justify-center w-full p-1.5 md:p-2 rounded-md bg-secondary/20 hover:bg-secondary/30 text-xs md:text-sm transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               Add New Subtask

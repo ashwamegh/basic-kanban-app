@@ -7,9 +7,10 @@ import BoardFormModal from './BoardFormModal';
 interface HeaderProps {
   currentBoard?: Board;
   onAddTask: () => void;
+  onMenuToggle?: () => void;
 }
 
-export default function Header({ currentBoard, onAddTask }: HeaderProps) {
+export default function Header({ currentBoard, onAddTask, onMenuToggle }: HeaderProps) {
   const [showBoardActions, setShowBoardActions] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -80,21 +81,37 @@ export default function Header({ currentBoard, onAddTask }: HeaderProps) {
 
   return (
     <>
-      <header className="h-20 bg-card border-b border-border px-6 flex items-center justify-between">
+      <header className="h-20 bg-card border-b border-border px-4 md:px-6 flex items-center justify-between">
         <div className="flex items-center">
-          <h1 className="text-xl font-bold">
+          {/* Mobile menu toggle */}
+          {onMenuToggle && (
+            <button 
+              onClick={onMenuToggle}
+              className="mr-4 p-2 md:hidden text-gray-400 hover:text-white"
+              aria-label="Toggle menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          )}
+          <h1 className="text-lg md:text-xl font-bold truncate max-w-[200px] md:max-w-none">
             {currentBoard ? currentBoard.name : 'Select a board'}
           </h1>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {currentBoard && (
             <>
               <button
                 onClick={onAddTask}
-                className="bg-primary hover:bg-opacity-80 text-white rounded-full px-4 py-2 font-medium flex items-center"
+                className="bg-primary hover:bg-opacity-80 text-white rounded-full px-3 py-1.5 md:px-4 md:py-2 font-medium flex items-center"
               >
-                <span className="mr-1 text-lg">+</span> Add New Task
+                <span className="mr-1 text-lg">+</span> 
+                <span className="hidden md:inline">Add New Task</span>
+                <span className="md:hidden">Add</span>
               </button>
               
               <div className="relative">

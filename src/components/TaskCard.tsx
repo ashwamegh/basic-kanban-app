@@ -57,10 +57,10 @@ export default function TaskCard({ task, onClick, onSubtaskUpdate }: TaskCardPro
 
   return (
     <div 
-      className="bg-card shadow-md rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all hover:translate-y-[-2px] w-[280px]"
+      className="bg-card shadow-md rounded-lg p-3 md:p-4 cursor-pointer hover:shadow-lg transition-all hover:translate-y-[-2px] w-full"
       onClick={onClick}
     >
-      <h4 className="font-bold text-sm mb-3 truncate">{task.title}</h4>
+      <h4 className="font-bold text-xs md:text-sm mb-2 md:mb-3 truncate">{task.title}</h4>
       
       {subtasksCount > 0 && (
         <div className="flex items-center">

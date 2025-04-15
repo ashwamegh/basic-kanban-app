@@ -8,9 +8,10 @@ import BoardFormModal from './BoardFormModal';
 
 interface SidebarProps {
   onBoardChange: (boardId: number) => void;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ onBoardChange }: SidebarProps) {
+export default function Sidebar({ onBoardChange, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [boards, setBoards] = useState<Board[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,16 +81,32 @@ export default function Sidebar({ onBoardChange }: SidebarProps) {
     <>
       <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
         <div className="p-6">
-          <div className="flex items-center space-x-2">
-            <div className="bg-primary w-6 h-6 rounded flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
-                <rect x="0.5" y="0.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
-                <rect x="0.5" y="17.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
-                <rect x="16.5" y="0.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
-                <rect opacity="0.5" x="16.5" y="17.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
-              </svg>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="bg-primary w-6 h-6 rounded flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25" viewBox="0 0 24 25" fill="none">
+                  <rect x="0.5" y="0.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
+                  <rect x="0.5" y="17.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
+                  <rect x="16.5" y="0.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
+                  <rect opacity="0.5" x="16.5" y="17.5" width="7" height="7" rx="1.5" fill="#635FC7" stroke="#635FC7"/>
+                </svg>
+              </div>
+              <h1 className="text-xl font-bold">kanban</h1>
             </div>
-            <h1 className="text-xl font-bold">kanban</h1>
+            
+            {/* Close button for mobile - only displayed on mobile */}
+            {onClose && (
+              <button 
+                onClick={onClose}
+                className="md:hidden p-2 text-gray-400 hover:text-white"
+                aria-label="Close menu"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 

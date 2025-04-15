@@ -69,11 +69,11 @@ export default function Column({ column, onTaskClick, allColumns }: ColumnProps)
 
   return (
     <>
-      <div className="w-[280px] flex flex-col h-full">
-        <div className="flex items-center justify-between mb-6">
+      <div className="w-[240px] md:w-[280px] flex flex-col h-full">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
           <div className="flex items-center space-x-2">
             <div className={`w-3 h-3 rounded-full ${getColumnColor()}`}></div>
-            <h3 className="text-sm uppercase tracking-widest font-bold text-gray-500">
+            <h3 className="text-xs md:text-sm uppercase tracking-widest font-bold text-gray-500 truncate max-w-[150px] md:max-w-[200px]">
               {column.name} ({tasks.length})
             </h3>
           </div>
@@ -96,16 +96,16 @@ export default function Column({ column, onTaskClick, allColumns }: ColumnProps)
             <p className="text-sm text-destructive">{error}</p>
           ) : tasks.length === 0 ? (
             <div className="border border-dashed border-gray-600 rounded-md h-32 flex flex-col items-center justify-center p-4">
-              <p className="text-sm text-gray-500 mb-2">No tasks</p>
+              <p className="text-xs md:text-sm text-gray-500 mb-2">No tasks</p>
               <button
                 onClick={() => setIsNewTaskFormVisible(true)}
-                className="text-primary hover:underline text-sm font-medium"
+                className="text-primary hover:underline text-xs md:text-sm font-medium"
               >
                 + Add Task
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {tasks.map((task) => (
                 <TaskCard
                   key={task.id}
@@ -118,7 +118,7 @@ export default function Column({ column, onTaskClick, allColumns }: ColumnProps)
               {/* Add task button immediately after the tasks */}
               <button
                 onClick={() => setIsNewTaskFormVisible(true)}
-                className="py-2 px-3 text-sm text-primary hover:text-accent flex items-center rounded-md w-full bg-card shadow-sm border border-dashed border-gray-600 hover:bg-secondary hover:bg-opacity-30 transition-colors"
+                className="py-2 px-3 text-xs md:text-sm text-primary hover:text-accent flex items-center rounded-md w-full bg-card shadow-sm border border-dashed border-gray-600 hover:bg-secondary hover:bg-opacity-30 transition-colors"
               >
                 <svg className="w-3 h-3 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19"></line>

@@ -155,13 +155,13 @@ export default function TaskDialog({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 md:p-4 z-50">
         <div 
           className="bg-card rounded-md w-full max-w-md max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
         >
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
+          <div className="p-4 md:p-6">
+            <div className="flex justify-between items-center mb-4 md:mb-6">
               {isEditing ? (
                 <div className="w-full">
                   <input
@@ -171,7 +171,7 @@ export default function TaskDialog({
                       setTitle(e.target.value);
                       if (errors.title) setErrors({});
                     }}
-                    className={`text-lg font-bold w-full bg-input rounded-md p-2 ${
+                    className={`text-base md:text-lg font-bold w-full bg-input rounded-md p-2 ${
                       errors.title ? 'border border-destructive' : ''
                     }`}
                     placeholder="Task Title"
@@ -181,7 +181,7 @@ export default function TaskDialog({
                   )}
                 </div>
               ) : (
-                <h3 className="text-lg font-bold">{task.title}</h3>
+                <h3 className="text-base md:text-lg font-bold">{task.title}</h3>
               )}
               
               <div className="relative">
@@ -222,19 +222,19 @@ export default function TaskDialog({
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full h-24 bg-input rounded-md p-2 mb-4 text-sm"
+                className="w-full h-20 md:h-24 bg-input rounded-md p-2 mb-4 text-xs md:text-sm"
                 placeholder="Add a description"
               />
             ) : (
-              <p className="text-gray-400 text-sm mb-6">
+              <p className="text-gray-400 text-xs md:text-sm mb-4 md:mb-6">
                 {task.description || 'No description'}
               </p>
             )}
             
             {/* Subtasks section - shown in both view and edit modes */}
-            <div className="mb-6 border border-secondary/20 rounded-lg p-4 bg-secondary/5">
+            <div className="mb-4 md:mb-6 border border-secondary/20 rounded-lg p-3 md:p-4 bg-secondary/5">
               <div className="mb-2 flex justify-between items-center">
-                <h4 className="text-sm font-medium">
+                <h4 className="text-xs md:text-sm font-medium">
                   Subtasks
                 </h4>
                 <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
@@ -245,12 +245,12 @@ export default function TaskDialog({
             </div>
             
             {isEditing && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Status</label>
+              <div className="mb-4 md:mb-6">
+                <label className="block text-xs md:text-sm font-medium mb-2">Status</label>
                 <select
                   value={columnId}
                   onChange={(e) => setColumnId(Number(e.target.value))}
-                  className="w-full p-2 rounded-md bg-input text-sm"
+                  className="w-full p-2 rounded-md bg-input text-xs md:text-sm"
                 >
                   {columns.map((column) => (
                     <option key={column.id} value={column.id}>{column.name}</option>
@@ -260,17 +260,17 @@ export default function TaskDialog({
             )}
             
             {isEditing ? (
-              <div className="flex space-x-2 mt-6">
+              <div className="flex space-x-2 mt-4 md:mt-6">
                 <button
                   onClick={handleSave}
                   disabled={isSubmitting}
-                  className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-full py-2 px-4 disabled:opacity-50"
+                  className="flex-1 bg-primary hover:bg-opacity-80 text-white rounded-full py-2 px-3 md:px-4 text-sm disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="flex-1 bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+                  className="flex-1 bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-3 md:px-4 text-sm"
                 >
                   Cancel
                 </button>
@@ -279,7 +279,7 @@ export default function TaskDialog({
               <div className="flex justify-end">
                 <button
                   onClick={onClose}
-                  className="bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-4"
+                  className="bg-secondary hover:bg-opacity-80 text-white rounded-full py-2 px-3 md:px-4 text-sm"
                 >
                   Close
                 </button>

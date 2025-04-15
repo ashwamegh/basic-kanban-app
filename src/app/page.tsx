@@ -32,6 +32,9 @@ export default function Home() {
   const [isNewColumnModalVisible, setIsNewColumnModalVisible] = useState(false);
   const [columnToDelete, setColumnToDelete] = useState<ColumnType | null>(null);
   const [isDeleteColumnConfirmVisible, setIsDeleteColumnConfirmVisible] = useState(false);
+  
+  // State for mobile sidebar visibility
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   // Fetch board details when board changes
   useEffect(() => {
@@ -172,14 +175,31 @@ export default function Home() {
     setIsDeleteColumnConfirmVisible(true);
   };
 
+  // Toggle sidebar on mobile
+  const toggleSidebar = () => {
+    setIsSidebarVisible(!isSidebarVisible);
+  };
+
   return (
     <main className="flex h-screen overflow-hidden bg-background">
-      <Sidebar onBoardChange={handleBoardChange} />
+      {/* Mobile sidebar overlay */}
+      {isSidebarVisible && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          onClick={() => setIsSidebarVisible(false)}
+        ></div>
+      )}
+      
+      {/* Sidebar with mobile visibility toggling */}
+      <div className={`${isSidebarVisible ? 'translate-x-0' : '-translate-x-full'} fixed top-0 left-0 h-full z-30 md:relative md:translate-x-0 transition-transform duration-300 ease-in-out`}>
+        <Sidebar onBoardChange={handleBoardChange} onClose={() => setIsSidebarVisible(false)} />
+      </div>
       
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header 
           currentBoard={currentBoard || undefined} 
           onAddTask={handleAddNewTask} 
+          onMenuToggle={toggleSidebar}
         />
         
         {isLoadingColumns ? (
@@ -187,7 +207,7 @@ export default function Home() {
             <p className="text-gray-500">Loading columns...</p>
           </div>
         ) : columns.length === 0 ? (
-          <div className="flex items-center justify-center flex-1 flex-col">
+          <div className="flex items-center justify-center flex-1 flex-col p-4 text-center">
             <p className="text-gray-500 mb-4">This board is empty. Create a new column to get started.</p>
             <button 
               className="bg-primary hover:bg-opacity-80 text-white rounded-full px-4 py-2"
@@ -197,8 +217,8 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="flex-1 overflow-x-auto p-6">
-            <div className="flex space-x-6 h-full">
+          <div className="flex-1 overflow-x-auto p-4 md:p-6">
+            <div className="flex space-x-4 md:space-x-6 h-full">
               {columns.map((column) => (
                 <div className="relative group" key={column.id}>
                   <Column 
@@ -208,7 +228,7 @@ export default function Home() {
                   />
                   
                   {/* Column actions */}
-                  <div className="absolute top-0 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-0 right-2 md:right-6 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => confirmDeleteColumn(column)}
                       className="p-1 bg-card rounded-full text-destructive hover:bg-destructive hover:text-white shadow-md transition-colors"
@@ -224,9 +244,9 @@ export default function Home() {
                 </div>
               ))}
               
-              <div className="min-w-[280px] flex items-stretch justify-center">
+              <div className="min-w-[240px] md:min-w-[280px] flex items-stretch justify-center">
                 <button 
-                  className="text-gray-500 hover:text-white bg-[#01091b] rounded-md px-10 py-8 text-lg font-bold hover:bg-opacity-80"
+                  className="text-gray-500 hover:text-white bg-[#01091b] rounded-md px-4 py-6 md:px-10 md:py-8 text-lg font-bold hover:bg-opacity-80"
                   onClick={() => setIsNewColumnModalVisible(true)}
                 >
                   + New Column
