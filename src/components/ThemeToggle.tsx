@@ -6,7 +6,6 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [mounted, setMounted] = useState(false);
   
-  // Initialize theme from localStorage when component mounts
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
@@ -15,19 +14,14 @@ export default function ThemeToggle() {
     }
   }, []);
   
-  // Apply theme changes to the document
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     
-    // Update the document classes
     document.documentElement.classList.remove('dark-theme', 'light-theme');
     document.documentElement.classList.add(`${newTheme}-theme`);
     
-    // Save to localStorage
     localStorage.setItem('theme', newTheme);
-    
-    console.log('Theme toggled to:', newTheme);
   };
   
   if (!mounted) return null;

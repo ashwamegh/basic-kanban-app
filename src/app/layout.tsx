@@ -15,7 +15,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Add inline script to set theme early and avoid flash */}
         <Script id="theme-script" strategy="beforeInteractive">
           {`
             (function() {
